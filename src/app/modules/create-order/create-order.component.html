@@ -1,48 +1,42 @@
 <form [formGroup]="orderForm">
-    <label>
-        Nombre del Cliente:
-        <input type="text" formControlName="nombreCliente">
-    </label>
-
-    <label>
-        Email del Cliente:
-        <input type="text" formControlName="emailCliente">
-    </label>
-
+    <label for="nombreCliente">      Nombre del Cliente: </label>
+        <input type="text" formControlName="nombreCliente" id="nombreCliente">
+    <label for="emailCliente">   Email del Cliente: </label>   
+        <input type="text" formControlName="emailCliente" id="emailCliente">
 
     <div formArrayName="productos">
+        <button type="button" (click)="agregarProducto()"> Agregar producto </button>
         
         @for(producto of productos.controls; track $index ){
-            <div [formGroupName]="$index"]>
-                <label>
-                    Producto:
-                    <select formControlName="productoNombre" (change)="onProductoSeleccionado($index)">
+            <div [formGroupName]="$index">
+                <label for="productoNombre">    Producto: </label>   
+                    <select id="productoNombre" formControlName="productoNombre" (change)="onProductoSeleccionado($index)">
                         
                         @for(productoDisponible of productosDisponibles; track $index){
                             <option [value]="productoDisponible.id">{{productoDisponible.name}} </option>
                         }
                     </select>
-                </label>
-                <label>
-                    Precio unitario:
-                    <input type="number" formControlName="precioUnitario" />
-                </label>
-                <label>
-                    Subtotal:
-                    <input formControlName="precioSubtotal" type="number"  />
-                </label>
-                <label>
+             
+                <label for="precioUnitario"> Precio unitario: </label>
+        
+                    <input id="precioUnitario" type="number" formControlName="precioUnitario" />
+
+                    <label for="cantidad">Cantidad</label>
+                    <input id="cantidad" type="number" formControlName="cantidad" (input)="onCantidadChange($index)" />
+            
+                <label for="precioSubtotal"> Subtotal: </label>
+    
+                    <input id="precioSubtotal" formControlName="precioSubtotal" type="number"  />
+             
+                    <label for="precioSubtotal"> Subtotal: </label>
                     Stock:
-                    <input type="number" formControlName="stockRestante" />
-                </label>
+                    <input id="stock" type="number" formControlName="stock" />
+        
                 <button type="button" (click)="eliminarProducto($index)">Eliminar producto</button>
             </div>
         }
     </div>
     
-    <button type="button" (click)="agregarProducto()">Agregar producto</button>
-
- 
-
+   
 
 </form>

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormGroup, FormControl, FormArray, Validators } from '@angular/forms';
 import { Producto } from '../../models/producto';
 import { ProductoService } from '../../services/producto.service';
@@ -12,7 +12,11 @@ import { CommonModule } from '@angular/common';
   templateUrl: './create-order.component.html',
   styleUrl: './create-order.component.css'
 })
-export class CreateOrderComponent {
+export class CreateOrderComponent implements OnInit {
+
+  ngOnInit(): void {
+   this.cargarProductos();
+  }
 
 
   private readonly productoService = inject(ProductoService);
@@ -60,10 +64,6 @@ export class CreateOrderComponent {
   }
 
 
-
-
-
-
   orderForm : FormGroup = new FormGroup({
     nombreCliente : new FormControl('', [Validators.required, Validators.minLength(3), Validators.maxLength(20)] ),
     emailCliente: new FormControl('', [Validators.required, Validators.email] ),
@@ -71,17 +71,11 @@ export class CreateOrderComponent {
   })
 
 
-
-
-
-
-
   get productos(): FormArray {
     return this.orderForm.get('productos') as FormArray;
   }
 
   
-
 
   agregarProducto(){
     const producto = new FormGroup({
