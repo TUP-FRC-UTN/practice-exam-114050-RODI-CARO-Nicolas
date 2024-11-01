@@ -1,21 +1,43 @@
 <form [formGroup]="orderForm">
     <label for="nombreCliente">      Nombre del Cliente: </label>
         <input type="text" formControlName="nombreCliente" id="nombreCliente">
+        @if(orderForm.controls['nombreCliente'].invalid
+        &&  
+        ( orderForm.controls['nombreCliente'].touched || orderForm.controls['nombreCliente'].dirty)
+          ){
+              @if(orderForm.controls['nombreCliente']?.errors?.['required']){
+                <div class="text-danger">Nombre del cliente es requerido</div>
+              }
+        }
     <label for="emailCliente">   Email del Cliente: </label>   
         <input type="text" formControlName="emailCliente" id="emailCliente">
+        @if(orderForm.controls['emailCliente'].invalid 
+        && (orderForm.controls['emailCliente'].touched ||
+        orderForm.controls['emailCliente'].dirty
+            )){
+                @if(orderForm.controls['emailCliente'].errors?.['email']){
+                    <div class="text-danger">El email ingresado tiene formato no válido</div>
+                }
+            }
 
     <div formArrayName="productos">
         <button type="button" (click)="agregarProducto()"> Agregar producto </button>
         
+        @if(orderForm.controls['productos'].errors?.['duplicateProducts']){
+            <div class="error-message">
+                No se permiten productos duplicados
+            </div>
+        }
         @for(producto of productos.controls; track $index ){
             <div [formGroupName]="$index">
-                <label for="productoNombre">    Producto: </label>   
+                <label for="productoNombre">  Producto: </label>   
                     <select id="productoNombre" formControlName="productoNombre" (change)="onProductoSeleccionado($index)">
                         
                         @for(productoDisponible of productosDisponibles; track $index){
                             <option [value]="productoDisponible.id">{{productoDisponible.name}} </option>
                         }
                     </select>
+
              
                 <label for="precioUnitario"> Precio unitario: </label>
         
