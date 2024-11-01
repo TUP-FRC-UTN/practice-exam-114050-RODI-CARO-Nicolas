@@ -1,0 +1,48 @@
+<form [formGroup]="orderForm">
+    <label>
+        Nombre del Cliente:
+        <input type="text" formControlName="nombreCliente">
+    </label>
+
+    <label>
+        Email del Cliente:
+        <input type="text" formControlName="emailCliente">
+    </label>
+
+
+    <div formArrayName="productos">
+        
+        @for(producto of productos.controls; track $index ){
+            <div [formGroupName]="$index"]>
+                <label>
+                    Producto:
+                    <select formControlName="productoNombre" (change)="onProductoSeleccionado($index)">
+                        
+                        @for(productoDisponible of productosDisponibles; track $index){
+                            <option [value]="productoDisponible.id">{{productoDisponible.name}} </option>
+                        }
+                    </select>
+                </label>
+                <label>
+                    Precio unitario:
+                    <input type="number" formControlName="precioUnitario" />
+                </label>
+                <label>
+                    Subtotal:
+                    <input formControlName="precioSubtotal" type="number"  />
+                </label>
+                <label>
+                    Stock:
+                    <input type="number" formControlName="stockRestante" />
+                </label>
+                <button type="button" (click)="eliminarProducto($index)">Eliminar producto</button>
+            </div>
+        }
+    </div>
+    
+    <button type="button" (click)="agregarProducto()">Agregar producto</button>
+
+ 
+
+
+</form>
