@@ -112,6 +112,23 @@
       },
       "orderCode": "ORD-1730498068657-770",
       "timestamp": "2024-11-01T21:54:28.657Z"
+    },
+    {
+      "id": "ddbf",
+      "customerName": "Nicolas",
+      "email": "nicolasgeronimorodi@gmail.com",
+      "products": [
+        {
+          "productId": "1",
+          "quantity": 4
+        }
+      ],
+      "total": {
+        "productoNombre": "1",
+        "cantidad": 4
+      },
+      "orderCode": "ORD-1730822145063-494",
+      "timestamp": "2024-11-05T15:55:45.063Z"
     }
   ]
 }

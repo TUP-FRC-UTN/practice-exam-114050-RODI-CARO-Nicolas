@@ -1,3 +1,133 @@
+<div class="container mt-4">
+    <h2 class="mb-4">Crear una orden de compra</h2>
+    <form [formGroup]="orderForm" (ngSubmit)="sendForm()">
+            <!--Sección datos del cliente -->
+            <div class="row-mb-4">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Nombre del cliente</label>
+                    <input type="text" class="form-control" formControlName="nombreCliente" id="nombreCliente">
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" formControlName="emailCliente" id="emailCliente">
+                </div>
+                
+            </div>
+
+            <!--Sección de productos-->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Productos</h5>
+                        <button type="button" class="btn btn-primary" (click)="agregarProducto()">
+                            +
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!--Lista de productos-->
+                    <div formArrayName="productos">
+                        @for(producto of productos.controls; track $index ){
+                            <div class="row mb-3" [formGroupName]="$index">
+                                <!--Selector de producto-->
+                                <div class="col-md-3">
+                                    <label class="form-label">Producto</label>
+                                    <select class="form-select" id="productoNombre" formControlName="productoNombre" (change)="onProductoSeleccionado($index)">
+                                        @for(productoDisponible of productosDisponibles; track $index){
+                                            <option [value]="productoDisponible.id">{{productoDisponible.name}} </option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <!--Campo precio unitario readonly-->
+
+                                <div class="col-md-2">
+                                <label class="form-label">Precio unitario</label>
+                                <input type="number" class="form-control" formControlName="precioUnitario" readonly>
+                                </div>
+    
+                                <!--Campo cantidad-->
+    
+                                <div class="col-md-2">
+                                    <label class="form-label">Cantidad</label>
+                                    <input type="number" class="form-control" formControlName="cantidad" (input)="onCantidadChange($index)">
+                                </div>
+    
+                                <!--Campo precio readonly-->
+    
+                                <div class="col-md-2">
+                                    <label class="form-label">Subtotal </label>
+                                    <input type="number" class="form-control" formControlName="precioSubtotal" readonly>
+                                </div>
+    
+                                <!--Campo stock readonly-->
+    
+                                <div class="col-md-2">
+                                    <label class="form-label">Stock</label>
+                                    <input type="number" class="form-control" formControlName="stock" readonly>
+                                </div>
+    
+                                <!--Botón eliminar-->
+                                <div class="col-md-1 d-flex align-items-end">
+                                    <button type="button" class="btn btn-danger" (click)="eliminarProducto($index)">X</button>
+                                </div>
+                            </div>
+
+                        }
+
+                    
+                    </div>
+                </div>
+            </div>
+
+            <!--Sección de productos seleccionados-->
+            <div class="card-mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Productos seleccionados</h5>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li>
+                            Producto Nuevo - Cantidad: 2 - Precio: 1500 - Stock: 5
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card-mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 offset-md-6">
+                            <div class="d-flex jusitify-content-between">
+                                <strong>Total: </strong>
+                                <span>1500</span>
+                            </div>
+                            <div class="text-success mt-2">
+                                10% descuento aplicado!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">
+                    Crear orden
+                </button>
+            </div>
+
+
+    </form>
+</div>
+
+
+
+
+<!--
+
+
 <form [formGroup]="orderForm" (ngSubmit)="sendForm()" >
     <label for="nombreCliente">      Nombre del Cliente: </label>
         <input type="text" formControlName="nombreCliente" id="nombreCliente">
@@ -71,6 +201,8 @@
         }
     </div>
     
-    <button type="submit" class="btn btn-primary">Enviar</button>
+    <button type="submit" class="btn btn-primary">Enviar</button> 
 
 </form>
+
+-->
