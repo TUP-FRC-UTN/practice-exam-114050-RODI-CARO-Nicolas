@@ -5,12 +5,12 @@
             <div class="row-mb-4">
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Nombre del cliente</label>
-                    <input type="text" class="form-control" formControlName="nombreCliente" id="nombreCliente">
+                    <input type="text" class="form-control" formControlName="customerName" id="customerName">
                 </div>
 
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Email</label>
-                    <input type="email" class="form-control" formControlName="emailCliente" id="emailCliente">
+                    <input type="email" class="form-control" formControlName="email" id="email">
                 </div>
                 
             </div>
@@ -28,39 +28,34 @@
 
                 <div class="card-body">
                     <!--Lista de productos-->
-                    <div formArrayName="productos">
-                        @for(producto of productos.controls; track $index ){
+                    <div formArrayName="products">
+                        @for(producto of products.controls; track $index ){
                             <div class="row mb-3" [formGroupName]="$index">
                                 <!--Selector de producto-->
                                 <div class="col-md-3">
                                     <label class="form-label">Producto</label>
-                                    <select class="form-select" id="productoNombre" formControlName="productoNombre" (change)="onProductoSeleccionado($index)">
+                                    <select class="form-select" id="productoNombre" formControlName="productId" (change)="onProductoSeleccionado($index)">
                                         @for(productoDisponible of productosDisponibles; track $index){
                                             <option [value]="productoDisponible.id">{{productoDisponible.name}} </option>
                                         }
                                     </select>
                                 </div>
 
-                                <!--Campo precio unitario readonly-->
+                                <!--Campo precio  readonly-->
 
                                 <div class="col-md-2">
                                 <label class="form-label">Precio unitario</label>
-                                <input type="number" class="form-control" formControlName="precioUnitario" readonly>
+                                <input type="number" class="form-control" formControlName="price" readonly>
                                 </div>
     
                                 <!--Campo cantidad-->
     
                                 <div class="col-md-2">
                                     <label class="form-label">Cantidad</label>
-                                    <input type="number" class="form-control" formControlName="cantidad" (input)="onCantidadChange($index)">
+                                    <input type="number" class="form-control" formControlName="quantity" (input)="onCantidadChange($index)">
                                 </div>
     
-                                <!--Campo precio readonly-->
-    
-                                <div class="col-md-2">
-                                    <label class="form-label">Subtotal </label>
-                                    <input type="number" class="form-control" formControlName="precioSubtotal" readonly>
-                                </div>
+                
     
                                 <!--Campo stock readonly-->
     
@@ -124,85 +119,3 @@
 
 
 
-
-<!--
-
-
-<form [formGroup]="orderForm" (ngSubmit)="sendForm()" >
-    <label for="nombreCliente">      Nombre del Cliente: </label>
-        <input type="text" formControlName="nombreCliente" id="nombreCliente">
-        @if(orderForm.controls['nombreCliente'].invalid
-        &&  
-        ( orderForm.controls['nombreCliente'].touched || orderForm.controls['nombreCliente'].dirty)
-          ){
-              @if(orderForm.controls['nombreCliente']?.errors?.['required']){
-                <div class="text-danger">Nombre del cliente es requerido</div>
-              }
-        }
-    <label for="emailCliente">   Email del Cliente: </label>   
-        <input type="text" formControlName="emailCliente" id="emailCliente">
-        @if(orderForm.controls['emailCliente'].invalid 
-        && (orderForm.controls['emailCliente'].touched ||
-        orderForm.controls['emailCliente'].dirty
-            )){
-                @if(orderForm.controls['emailCliente'].errors?.['email']){
-                    <div class="text-danger">El email ingresado tiene formato no válido</div>
-                }
-            }
-
-            @if(isCheckingEmail){
-                <div class="validation-pending">
-                    Verificando emaill...
-                </div>
-            }
-
-            @if(hayErrorLimiteOrdenes()){
-                <div class="error-message">
-                    {{getMensajeErrorLimiteOrdenes() }}
-                </div>
-            }
-
-    <div formArrayName="productos">
-        <button type="button" (click)="agregarProducto()"> Agregar producto </button>
-        
-        @if(orderForm.controls['productos'].errors?.['duplicateProducts']){
-            <div class="error-message">
-                No se permiten productos duplicados
-            </div>
-        }
-        @for(producto of productos.controls; track $index ){
-            <div [formGroupName]="$index">
-                <label for="productoNombre">  Producto: </label>   
-                    <select id="productoNombre" formControlName="productoNombre" (change)="onProductoSeleccionado($index)">
-                        
-                        @for(productoDisponible of productosDisponibles; track $index){
-                            <option [value]="productoDisponible.id">{{productoDisponible.name}} </option>
-                        }
-                    </select>
-
-             
-                <label for="precioUnitario"> Precio unitario: </label>
-        
-                    <input id="precioUnitario" type="number" formControlName="precioUnitario" />
-
-                    <label for="cantidad">Cantidad</label>
-                    <input id="cantidad" type="number" formControlName="cantidad" (input)="onCantidadChange($index)" />
-            
-                <label for="precioSubtotal"> Subtotal: </label>
-    
-                    <input id="precioSubtotal" formControlName="precioSubtotal" type="number"  />
-             
-                    <label for="precioSubtotal"> Subtotal: </label>
-                    Stock:
-                    <input id="stock" type="number" formControlName="stock" />
-        
-                <button type="button" (click)="eliminarProducto($index)">Eliminar producto</button>
-            </div>
-        }
-    </div>
-    
-    <button type="submit" class="btn btn-primary">Enviar</button> 
-
-</form>
-
--->

@@ -22,12 +22,15 @@ export class CreateOrderComponent implements OnInit {
 
   constructor(){
     this.orderForm = new FormGroup({
-      nombreCliente: new FormControl('', [Validators.required, Validators.minLength(3), Validators.maxLength(20)] ),
-      emailCliente: new FormControl('', [Validators.required, Validators.email], [this.checkOrderLimit()] ),
-      productos: new FormArray([]), //donde por dentro cada uno va a ser un form group
+      customerName: new FormControl('', [Validators.required, Validators.minLength(3), Validators.maxLength(20)] ),
+      email: new FormControl('', [Validators.required, Validators.email], [this.checkOrderLimit()] ),
+      products: new FormArray([]), //donde por dentro cada uno va a ser un form group
+      total: new FormControl(''),
+      orderCode : new FormControl(''),
+      timestamp : new FormControl()
     });
     
-  const productosArray = this.orderForm.get('productos') as FormArray;
+  const productosArray = this.orderForm.get('products') as FormArray;
   productosArray.setValidators(this.chequearProductosDuplicados.bind(this));
 
   this.orderForm.get('emailCliente')?.statusChanges.subscribe(status => {
@@ -40,12 +43,12 @@ export class CreateOrderComponent implements OnInit {
   isSubmitting = false;
 
   hayErrorLimiteOrdenes(): boolean {
-    const emailControls = this.orderForm.get('emailCliente');
+    const emailControls = this.orderForm.get('email');
     return emailControls?.errors?.['orderLimit'] !== undefined;
   }
 
   getMensajeErrorLimiteOrdenes():string {
-    const emailControl = this.orderForm.get('emailCliente');
+    const emailControl = this.orderForm.get('email');
     return emailControl?.errors?.['orderLimit']?.message || '';
   }
 
@@ -88,8 +91,8 @@ export class CreateOrderComponent implements OnInit {
    this.cargarProductos();
   }
 
-  get productos(): FormArray {
-    return this.orderForm.get('productos') as FormArray;
+  get products(): FormArray {
+    return this.orderForm.get('products') as FormArray;
   }
 
 
@@ -100,26 +103,26 @@ export class CreateOrderComponent implements OnInit {
   }
 
   onProductoSeleccionado(index : number){
-    const productoSeleccionado = this.productos.at(index).get('productoNombre')?.value;
+    const productoSeleccionado = this.products.at(index).get('productId')?.value;
     const producto = this.productosDisponibles.find(p => p.id === productoSeleccionado);
 
     if(producto){
-      this.productos.at(index).patchValue({
-        precioUnitario: producto.price,
+      this.products.at(index).patchValue({
+        price: producto.price,
         stock: producto.stock
       })
       
     }
 
-    this.productos.updateValueAndValidity();
+    this.products.updateValueAndValidity();
   }
 
 
   actualizarStockRestante(index : number){
-    const cantidad = this.productos.at(index).get('cantidad')?.value;
-    const stockActual = this.productos.at(index).get('stock')?.value;
+    const cantidad = this.products.at(index).get('quantity')?.value;
+    const stockActual = this.products.at(index).get('stock')?.value;
     const stockRestante = stockActual - cantidad;
-    this.productos.at(index).get('stock')?.setValue(stockRestante);
+    this.products.at(index).get('stock')?.setValue(stockRestante);
     
   }
 
@@ -130,21 +133,21 @@ export class CreateOrderComponent implements OnInit {
 
   
   actualizarPrecioSubtotal(index: number){
-    const cantidad = this.productos.at(index).get('cantidad')?.value;
-    const precioUnitario = this.productos.at(index).get('precioUnitario')?.value;
+    const cantidad = this.products.at(index).get('quantity')?.value;
+    const precioUnitario = this.products.at(index).get('price')?.value;
     const precioSubtotal = cantidad * precioUnitario;
-    this.productos.at(index).get('precioSubtotal')?.setValue(precioSubtotal);
+    this.products.at(index).get('precio')?.setValue(precioSubtotal);
 
   }
 
 
   chequearProductosDuplicados( control : AbstractControl): ValidationErrors | null {
-    const productos = control as FormArray;
-    if(!productos || productos.length === 0 ){
+    const products = control as FormArray;
+    if(!products || products.length === 0 ){
       return null;
     }
-    const productIds = productos.controls.map(control => 
-      control.get('productoNombre')?.value
+    const productIds = products.controls.map(control => 
+      control.get('productId')?.value
      );
 
      const hayDuplicados = productIds.some( (id, index)=> 
@@ -154,63 +157,61 @@ export class CreateOrderComponent implements OnInit {
   }
 
   hayProductosDuplicados(): boolean {
-    return this.productos.errors?.['duplicateProducts'] || false;
+    return this.products.errors?.['duplicateProducts'] || false;
   }
 
 
 
   agregarProducto(){
     const producto = new FormGroup({
-      productoNombre: new FormControl('', Validators.required),
-      cantidad: new FormControl(1, [Validators.required, Validators.min(1)]),
-      precioUnitario : new FormControl({value: 0, disabled: true}),
-      precioSubtotal: new FormControl({value: 0, disabled: true }),
+      productId: new FormControl('', Validators.required),
+      quantity: new FormControl(1, [Validators.required, Validators.min(1)]),
+      price : new FormControl({value: 0, disabled: true}),
       stock: new FormControl({value : 0, disabled: true})
     });
-    this.productos.push(producto);
+    this.products.push(producto);
 
-    producto.get('productoNombre')?.valueChanges.subscribe(()=>{
-      this.productos.updateValueAndValidity();
+    producto.get('productId')?.valueChanges.subscribe(()=>{
+      this.products.updateValueAndValidity();
     })
   }
 
   eliminarProducto(index: number){
-    this.productos.removeAt(index);
-    this.productos.updateValueAndValidity();
+    this.products.removeAt(index);
+    this.products.updateValueAndValidity();
     
   }
 
   sendForm(){
-    if(this.orderForm.valid){
-      this.isSubmitting = true;
-      const formValues = this.orderForm.value;
 
-      const order: Order ={
-        customerName: formValues.nombreCliente,
-        email: formValues.emailCliente,
-        products: this.mapProductsToOrderProducts(formValues.productos),
-        total: this.calculateTotal(formValues.productos),
-        orderCode: this.generateOrderCode(),
-        timestamp: new Date().toISOString(),
-      } as Order;
-      
-      this.orderService.createOrder(order)
-      .pipe(
-        finalize( () => {
+    this.orderForm.patchValue(
+      {
+        orderCode: this.generateOrderCode()
+      }
+    )
+    console.log('sendForm - this.orderForm: ', this.orderForm);
+
+    if(this.orderForm.valid){
+      const order = this.orderForm.value as Order;
+      console.log('se castea el form a objeto Order: ', order);
+
+      this.orderService.createOrder(order).pipe(
+        finalize(()=>{
           this.isSubmitting = false;
         })
-      ).subscribe({
+      )
+      .subscribe({
         next: (createdOrder) => {
-          console.log('Orden creada exitosamente: ', createdOrder);
           this.showSuccesMessage();
         },
         error: (error) => {
           console.error('Error al crear la orden ', error)
           this.showErrorMessage(error);
         }
+        
       })
-      
     }
+
   }
 
   showSuccesMessage(){
