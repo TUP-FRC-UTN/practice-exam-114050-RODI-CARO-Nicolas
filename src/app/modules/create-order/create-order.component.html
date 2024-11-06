@@ -57,6 +57,11 @@
                                             <option [value]="productoDisponible.id">{{productoDisponible.name}} </option>
                                         }
                                     </select>
+                                    @if(products.errors?.['duplicates']){
+                                        <div class="text-danger">
+                                            No se puede elegir el mismo producto.
+                                        </div>
+                                    }
                                 </div>
 
                                 <!--Campo precio  readonly-->
@@ -71,6 +76,17 @@
                                 <div class="col-md-2">
                                     <label class="form-label">Cantidad</label>
                                     <input type="number" class="form-control" formControlName="quantity" (input)="onCantidadChange($index)">
+                                
+                                @if(products.errors?.['productLimitsError']){
+                                    <div class="text-danger">
+                                        No se puede elegir mas de 10 unidades del mismo producto.
+                                    </div>
+                                }
+                                @if(products.errors?.['stockExcedido']){
+                                    <div class="text-danger">
+                                        La cantidad no puede superar el stock disponible.
+                                    </div>
+                                }
                                 </div>
     
                 
@@ -102,9 +118,11 @@
                 </div>
                 <div class="card-body">
                     <ul>
-                        <li>
-                            Producto Nuevo - Cantidad: 2 - Precio: 1500 - Stock: 5
-                        </li>
+                        @for(product of orderForm.controls['products'].value; track $index){
+                            <li>
+                               {{getProductNameById(product.id) + " - Cantidad: " + product.quantity + " - Precio: $" + product.price + " - Stock restante: " + product.stock }}
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>
@@ -115,11 +133,14 @@
                         <div class="col-md-6 offset-md-6">
                             <div class="d-flex jusitify-content-between">
                                 <strong>Total: </strong>
-                                <span>1500</span>
+                                <span>{{orderForm.value.total}}</span>
                             </div>
-                            <div class="text-success mt-2">
-                                10% descuento aplicado!
-                            </div>
+                            @if(discountApplies){
+                                <div class="text-success mt-2">
+                                    10% descuento aplicado!
+                                </div>
+                            }
+                          
                         </div>
                     </div>
                 </div>

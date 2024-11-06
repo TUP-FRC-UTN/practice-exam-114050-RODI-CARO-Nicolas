@@ -32,7 +32,7 @@ export class CreateOrderComponent implements OnInit {
   orderForm : FormGroup = new FormGroup({
     customerName: new FormControl('', [Validators.required, Validators.minLength(3), Validators.maxLength(20)] ),
     email: new FormControl('', [Validators.required, Validators.email], [this.checkOrderLimit()] ),
-    products: new FormArray([], [this.validarCantidadProductos(), this.validarProductoUnico()]), //donde por dentro cada uno va a ser un form group
+    products: new FormArray([], [this.validarCantidadProductos(), this.validarProductoUnico(), this.validarCantidadProductosSegunStock()]), //donde por dentro cada uno va a ser un form group
     total: new FormControl(''),
     orderCode : new FormControl(''),
     timestamp : new FormControl(new Date())
@@ -60,27 +60,73 @@ export class CreateOrderComponent implements OnInit {
     });
     this.products.push(producto);
     this.updateTotal()
-
-
-    producto.get('productId')?.valueChanges.subscribe(()=>{
-      this.products.updateValueAndValidity();
-    })
+    this.products.setValidators(this.validarProductoUnico());
+    this.products.setValidators(this.validarCantidadProductos());
+    this.products.setValidators(this.validarCantidadProductosSegunStock());
   }
 
 
-  hayErrorLimiteOrdenes(): boolean {
-    const emailControls = this.orderForm.get('email');
-    return emailControls?.errors?.['orderLimit'] !== undefined;
+  // Validaciones sincronicas
+
+
+
+
+  validarProductoUnico(): ValidatorFn {
+    return (control : AbstractControl): ValidationErrors | null => {
+      const products = control as FormArray
+      if(!products || products.length === 0){
+        return null;
+      }
+      const ids = products.controls.map(control => control.get('productId')?.value)
+      const hasDuplicates = ids.some((id, index) => ids.indexOf(id) !== index );
+      
+      //indexOf retorna el indice del primer miembro de la lista con el valor evaluado
+      //Entonces se pregunta si para alguno de los miembros de la lista devuelve un indice
+        //distinto de su indice actual
+        return hasDuplicates ? {'duplicates' : true} : null;
+
+    }
   }
 
-  getMensajeErrorLimiteOrdenes():string {
-    const emailControl = this.orderForm.get('email');
-    return emailControl?.errors?.['orderLimit']?.message || '';
+  validarCantidadProductos() : ValidatorFn {
+    return (control : AbstractControl) : ValidationErrors | null => {
+      const array = control as FormArray;
+      return (array.length < 1 && array.length > 10) ? {'productLimitError': true} : null 
+    }
   }
 
 
 
-  //Validacion asincronica
+
+  validarCantidadProductosSegunStock() : ValidatorFn {
+    return (control : AbstractControl) : ValidationErrors | null => {
+      const products = control as FormArray;
+     if(!products || products.length === 0 ){
+      return null;
+     }
+     const productsWithInvalidStock = products?.controls.some(productGroup => {
+      const quantity = productGroup.get('quantity')?.value;
+      const stock = productGroup.get('stock')?.value;
+      return quantity > stock;
+     });
+     return productsWithInvalidStock ? {'stockExcedido': true}:null;
+    }
+  }
+
+
+  getProductNameById(productId: string){
+    return this.productosDisponibles.find(p=> p.id == productId)?.name;
+  }
+
+
+
+
+
+
+
+
+
+  //Validacion asincronica orderForm.mail
 
   checkOrderLimit() : AsyncValidatorFn {
     return (control : AbstractControl): Observable<ValidationErrors | null> =>{
@@ -137,32 +183,12 @@ export class CreateOrderComponent implements OnInit {
       
     }
     this.updateTotal();
-    //this.products.setValidators(this.validarProductoUnico());
+    this.products.setValidators(this.validarCantidadProductos());
+    this.products.setValidators(this.validarProductoUnico());
+    this.products.setValidators(this.validarCantidadProductosSegunStock());
   }
 
-  validarProductoUnico(): ValidatorFn {
-    return (control : AbstractControl): ValidationErrors | null => {
-      const products = control as FormArray
-      if(!products || products.length === 0){
-        return null;
-      }
-      const ids = products.controls.map(control => control.get('productId')?.value)
-      const hasDuplicates = ids.some((id, index) => ids.indexOf(id) !== index );
-      
-      //indexOf retorna el indice del primer miembro de la lista con el valor evaluado
-      //Entonces se pregunta si para alguno de los miembros de la lista devuelve un indice
-        //distinto de su indice actual
-        return hasDuplicates ? {'duplicates' : true} : null;
 
-    }
-  }
-
-  validarCantidadProductos() : ValidatorFn {
-    return (control : AbstractControl) : ValidationErrors | null => {
-      const array = control as FormArray;
-      return (array.length < 1 && array.length > 10) ? {'productLimitError': true} : null 
-    }
-  }
 
 
   updateTotal(){
@@ -187,6 +213,12 @@ export class CreateOrderComponent implements OnInit {
     return total;
   }
 
+  onCantidadChange(index: number){
+    this.actualizarStockRestante(index);
+    this.actualizarPrecioSubtotal(index);
+  }
+
+
   actualizarStockRestante(index : number){
     const cantidad = this.products.at(index).get('quantity')?.value;
     const stockActual = this.products.at(index).get('stock')?.value;
@@ -195,10 +227,6 @@ export class CreateOrderComponent implements OnInit {
     
   }
 
-  onCantidadChange(index: number){
-    this.actualizarStockRestante(index);
-    this.actualizarPrecioSubtotal(index);
-  }
 
   
   actualizarPrecioSubtotal(index: number){
