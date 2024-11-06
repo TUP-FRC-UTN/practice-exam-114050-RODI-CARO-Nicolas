@@ -1,5 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { FormGroup, FormControl, FormArray, Validators, ValidationErrors, AbstractControl, AsyncValidatorFn } from '@angular/forms';
+import { FormGroup, FormControl, FormArray, Validators, ValidationErrors, AbstractControl, AsyncValidatorFn, ValidatorFn } from '@angular/forms';
 import { Producto } from '../../models/producto';
 import { ProductoService } from '../../services/producto.service';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -18,29 +18,55 @@ import { OrderProduct } from '../../models/order-product';
 })
 export class CreateOrderComponent implements OnInit {
 
-  orderForm : FormGroup;
-
-  constructor(){
-    this.orderForm = new FormGroup({
-      customerName: new FormControl('', [Validators.required, Validators.minLength(3), Validators.maxLength(20)] ),
-      email: new FormControl('', [Validators.required, Validators.email], [this.checkOrderLimit()] ),
-      products: new FormArray([]), //donde por dentro cada uno va a ser un form group
-      total: new FormControl(''),
-      orderCode : new FormControl(''),
-      timestamp : new FormControl()
-    });
     
-  const productosArray = this.orderForm.get('products') as FormArray;
-  productosArray.setValidators(this.chequearProductosDuplicados.bind(this));
-
-  this.orderForm.get('emailCliente')?.statusChanges.subscribe(status => {
-    this.isCheckingEmail = status === 'PENDING';
-  });
-  }
-
+  productosDisponibles: Producto[] = [];
+  private readonly productoService = inject(ProductoService);
+  private readonly orderService = inject(OrderService);
 
   isCheckingEmail = false;
   isSubmitting = false;
+
+
+  discountApplies : boolean = false;
+
+  orderForm : FormGroup = new FormGroup({
+    customerName: new FormControl('', [Validators.required, Validators.minLength(3), Validators.maxLength(20)] ),
+    email: new FormControl('', [Validators.required, Validators.email], [this.checkOrderLimit()] ),
+    products: new FormArray([], [this.validarCantidadProductos(), this.validarProductoUnico()]), //donde por dentro cada uno va a ser un form group
+    total: new FormControl(''),
+    orderCode : new FormControl(''),
+    timestamp : new FormControl(new Date())
+  });
+
+  constructor(){ }
+
+  /*
+  this.orderForm.get('emailCliente')?.statusChanges.subscribe(status => {
+    this.isCheckingEmail = status === 'PENDING';
+  }); */
+
+
+  get products(): FormArray {
+    return this.orderForm.get('products') as FormArray;
+  }
+
+  
+  agregarProducto(){
+    const producto = new FormGroup({
+      productId: new FormControl('', Validators.required),
+      quantity: new FormControl(1, [Validators.required, Validators.min(1)]),
+      price : new FormControl({value: 0, disabled: true}),
+      stock: new FormControl({value : 0, disabled: true})
+    });
+    this.products.push(producto);
+    this.updateTotal()
+
+
+    producto.get('productId')?.valueChanges.subscribe(()=>{
+      this.products.updateValueAndValidity();
+    })
+  }
+
 
   hayErrorLimiteOrdenes(): boolean {
     const emailControls = this.orderForm.get('email');
@@ -52,10 +78,9 @@ export class CreateOrderComponent implements OnInit {
     return emailControl?.errors?.['orderLimit']?.message || '';
   }
 
-  
-  productosDisponibles: Producto[] = [];
-  private readonly productoService = inject(ProductoService);
-  private readonly orderService = inject(OrderService);
+
+
+  //Validacion asincronica
 
   checkOrderLimit() : AsyncValidatorFn {
     return (control : AbstractControl): Observable<ValidationErrors | null> =>{
@@ -66,14 +91,15 @@ export class CreateOrderComponent implements OnInit {
       }
 
       return this.orderService.getOrdersByEmail(email).pipe(
-        debounceTime(300),
         map(orders => {
           const now = new Date();
           const last24Hours = new Date(now.getTime() - (24 * 60 * 60 * 1000));
+          console.log('last 24 hours: ', last24Hours)
           const recentOrders = orders.filter(order => {
             const orderDate = new Date(order.timestamp);
             return orderDate >= last24Hours;
           });
+          console.log('recent orders: ', recentOrders)
           return recentOrders.length >= 3 ? 
           {orderLimit : {message: 'Has excedido el límite de 3 pedidos en 24 horas'}} 
           : null;
@@ -91,9 +117,6 @@ export class CreateOrderComponent implements OnInit {
    this.cargarProductos();
   }
 
-  get products(): FormArray {
-    return this.orderForm.get('products') as FormArray;
-  }
 
 
   cargarProductos():void {
@@ -113,10 +136,56 @@ export class CreateOrderComponent implements OnInit {
       })
       
     }
-
-    this.products.updateValueAndValidity();
+    this.updateTotal();
+    //this.products.setValidators(this.validarProductoUnico());
   }
 
+  validarProductoUnico(): ValidatorFn {
+    return (control : AbstractControl): ValidationErrors | null => {
+      const products = control as FormArray
+      if(!products || products.length === 0){
+        return null;
+      }
+      const ids = products.controls.map(control => control.get('productId')?.value)
+      const hasDuplicates = ids.some((id, index) => ids.indexOf(id) !== index );
+      
+      //indexOf retorna el indice del primer miembro de la lista con el valor evaluado
+      //Entonces se pregunta si para alguno de los miembros de la lista devuelve un indice
+        //distinto de su indice actual
+        return hasDuplicates ? {'duplicates' : true} : null;
+
+    }
+  }
+
+  validarCantidadProductos() : ValidatorFn {
+    return (control : AbstractControl) : ValidationErrors | null => {
+      const array = control as FormArray;
+      return (array.length < 1 && array.length > 10) ? {'productLimitError': true} : null 
+    }
+  }
+
+
+  updateTotal(){
+        const total = this.calculateTotal();
+        this.discountApplies = total > 1000;
+        if(this.discountApplies){
+          this.orderForm.patchValue({total: total * 0.9})
+        } else {
+          this.orderForm.patchValue({total: total})
+        };
+    
+  }
+
+  private calculateTotal(){
+    let total = 0;
+    this.products.controls.forEach(p=> {
+      const quantity = p.get('quantity')?.value;
+      const price = p.get('price')?.value;
+
+      total += quantity * price;
+    })
+    return total;
+  }
 
   actualizarStockRestante(index : number){
     const cantidad = this.products.at(index).get('quantity')?.value;
@@ -136,45 +205,12 @@ export class CreateOrderComponent implements OnInit {
     const cantidad = this.products.at(index).get('quantity')?.value;
     const precioUnitario = this.products.at(index).get('price')?.value;
     const precioSubtotal = cantidad * precioUnitario;
-    this.products.at(index).get('precio')?.setValue(precioSubtotal);
+    this.products.at(index).get('price')?.setValue(precioSubtotal);
 
   }
 
 
-  chequearProductosDuplicados( control : AbstractControl): ValidationErrors | null {
-    const products = control as FormArray;
-    if(!products || products.length === 0 ){
-      return null;
-    }
-    const productIds = products.controls.map(control => 
-      control.get('productId')?.value
-     );
 
-     const hayDuplicados = productIds.some( (id, index)=> 
-    id && productIds.indexOf(id) !== index);
-
-    return hayDuplicados ? {duplicateProducts : true} : null;
-  }
-
-  hayProductosDuplicados(): boolean {
-    return this.products.errors?.['duplicateProducts'] || false;
-  }
-
-
-
-  agregarProducto(){
-    const producto = new FormGroup({
-      productId: new FormControl('', Validators.required),
-      quantity: new FormControl(1, [Validators.required, Validators.min(1)]),
-      price : new FormControl({value: 0, disabled: true}),
-      stock: new FormControl({value : 0, disabled: true})
-    });
-    this.products.push(producto);
-
-    producto.get('productId')?.valueChanges.subscribe(()=>{
-      this.products.updateValueAndValidity();
-    })
-  }
 
   eliminarProducto(index: number){
     this.products.removeAt(index);
@@ -222,20 +258,6 @@ export class CreateOrderComponent implements OnInit {
     alert('Error al crear la orden')
   }
 
-  private mapProductsToOrderProducts(formProducts: any[]): OrderProduct[]{
-    return formProducts.map(fp => ({
-      productId: fp.productoNombre,
-      quantity: fp.cantidad,
-      stock: fp.stock,
-      price: fp.precioUnitario
-    }))
-  }
-
-  private calculateTotal(products: any[]){
-    return products.reduce((total, product)=>{
-      return total + (product.cantidad * product.precioUnitario);
-    })
-  }
 
   private generateOrderCode(): string {
     const timestamp = Date.now();

@@ -6,11 +6,29 @@
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Nombre del cliente</label>
                     <input type="text" class="form-control" formControlName="customerName" id="customerName">
+                    
+                    @if(orderForm.controls['customerName'].invalid && (orderForm.controls['customerName'].dirty || orderForm.controls['customerName'].touched)  ){
+                        @if(orderForm.controls['customerName'].errors?.['required']) {
+                            <div class="text-danger">Campo obligatorio</div>
+                        }
+                      
+                    }
+
+
                 </div>
 
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Email</label>
                     <input type="email" class="form-control" formControlName="email" id="email">
+
+                    @if(orderForm.controls['email'].invalid && (orderForm.controls['email'].dirty || orderForm.controls['email'].touched)  ){
+                        @if(orderForm.controls['email'].errors?.['required']) {
+                            <div class="text-danger">Campo obligatorio</div>
+                        }
+                        @if( orderForm.controls ['email'].errors?.['orderLimit']) {
+                            <div class="text-danger">Superaste el límite de pedidos en un día</div>
+                        }
+                    }
                 </div>
                 
             </div>
@@ -44,7 +62,7 @@
                                 <!--Campo precio  readonly-->
 
                                 <div class="col-md-2">
-                                <label class="form-label">Precio unitario</label>
+                                <label class="form-label">Precio</label>
                                 <input type="number" class="form-control" formControlName="price" readonly>
                                 </div>
     
