@@ -60,9 +60,11 @@ export class CreateOrderComponent implements OnInit {
     });
     this.products.push(producto);
     this.updateTotal()
+    /*
     this.products.setValidators(this.validarProductoUnico());
     this.products.setValidators(this.validarCantidadProductos());
     this.products.setValidators(this.validarCantidadProductosSegunStock());
+    */
   }
 
 
@@ -183,9 +185,11 @@ export class CreateOrderComponent implements OnInit {
       
     }
     this.updateTotal();
+    /*
     this.products.setValidators(this.validarCantidadProductos());
     this.products.setValidators(this.validarProductoUnico());
     this.products.setValidators(this.validarCantidadProductosSegunStock());
+    */
   }
 
 
@@ -214,7 +218,7 @@ export class CreateOrderComponent implements OnInit {
   }
 
   onCantidadChange(index: number){
-    this.actualizarStockRestante(index);
+
     this.actualizarPrecioSubtotal(index);
   }
 

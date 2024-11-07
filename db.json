@@ -213,6 +213,20 @@
       "total": 1214.973,
       "orderCode": "ORD-1730927847827-134",
       "timestamp": "2024-11-06T21:15:23.008Z"
+    },
+    {
+      "id": "e52d",
+      "customerName": "Juan",
+      "email": "juanrodriguez@gmail.com",
+      "products": [
+        {
+          "productId": "1",
+          "quantity": 50
+        }
+      ],
+      "total": 999.99,
+      "orderCode": "ORD-1730939343035-87",
+      "timestamp": "2024-11-07T00:28:16.390Z"
     }
   ]
 }
