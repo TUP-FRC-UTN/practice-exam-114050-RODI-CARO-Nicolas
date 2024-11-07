@@ -259,6 +259,28 @@
       "total": 8099.919,
       "orderCode": "ORD-1730953818100-901",
       "timestamp": "2024-11-07T04:29:07.705Z"
+    },
+    {
+      "id": "bca1",
+      "customerName": "Juan Rodriguez",
+      "email": "jrodriguez@gmail.com",
+      "products": [
+        {
+          "productId": "1",
+          "quantity": 4,
+          "price": 3999.96,
+          "stock": 50
+        },
+        {
+          "productId": "2",
+          "quantity": 7,
+          "price": 4899.93,
+          "stock": 100
+        }
+      ],
+      "total": 45269.41500000001,
+      "orderCode": "ORD-1730955977101-865",
+      "timestamp": "2024-11-07T05:04:22.278Z"
     }
   ]
 }
