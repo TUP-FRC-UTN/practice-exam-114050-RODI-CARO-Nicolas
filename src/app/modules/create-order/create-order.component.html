@@ -38,7 +38,7 @@
                 <div class="card-header">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Productos</h5>
-                        <button type="button" class="btn btn-primary" (click)="agregarProducto()">
+                        <button type="button" class="btn btn-primary" (click)="addProduct()">
                             +
                         </button>
                     </div>
@@ -47,17 +47,17 @@
                 <div class="card-body">
                     <!--Lista de productos-->
                     <div formArrayName="products">
-                        @for(producto of products.controls; track $index ){
+                        @for(producto of productsFormArray.controls; track $index ){
                             <div class="row mb-3" [formGroupName]="$index">
                                 <!--Selector de producto-->
                                 <div class="col-md-3">
                                     <label class="form-label">Producto</label>
-                                    <select class="form-select" id="productoNombre" formControlName="productId" (change)="onProductoSeleccionado($index)">
-                                        @for(productoDisponible of productosDisponibles; track $index){
+                                    <select class="form-select" formControlName="productId" (change)="onSelectedProductChange($index)">
+                                        @for(productoDisponible of availableProducts; track $index){
                                             <option [value]="productoDisponible.id">{{productoDisponible.name}} </option>
                                         }
                                     </select>
-                                    @if(products.errors?.['duplicates']){
+                                    @if(productsFormArray.errors?.['duplicates']){
                                         <div class="text-danger">
                                             No se puede elegir el mismo producto.
                                         </div>
@@ -77,12 +77,12 @@
                                     <label class="form-label">Cantidad</label>
                                     <input type="number" class="form-control" formControlName="quantity" (input)="onCantidadChange($index)">
                                 
-                                @if(products.errors?.['productLimitsError']){
+                                @if(productsFormArray.errors?.['productLimitsError']){
                                     <div class="text-danger">
                                         No se puede elegir mas de 10 unidades del mismo producto.
                                     </div>
                                 }
-                                @if(products.errors?.['stockExcedido']){
+                                @if(productsFormArray.errors?.['stockExcedido']){
                                     <div class="text-danger">
                                         La cantidad no puede superar el stock disponible.
                                     </div>
@@ -100,7 +100,7 @@
     
                                 <!--Botón eliminar-->
                                 <div class="col-md-1 d-flex align-items-end">
-                                    <button type="button" class="btn btn-danger" (click)="eliminarProducto($index)">X</button>
+                                    <button type="button" class="btn btn-danger" (click)="removeProduct($index)">X</button>
                                 </div>
                             </div>
 

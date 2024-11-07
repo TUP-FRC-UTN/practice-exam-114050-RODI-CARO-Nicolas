@@ -1,6 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { FormGroup, FormControl, FormArray, Validators, ValidationErrors, AbstractControl, AsyncValidatorFn, ValidatorFn } from '@angular/forms';
-import { Producto } from '../../models/producto';
+import { Product } from '../../models/product';
 import { ProductoService } from '../../services/producto.service';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -18,41 +18,53 @@ import { OrderProduct } from '../../models/order-product';
 })
 export class CreateOrderComponent implements OnInit {
 
-    
-  productosDisponibles: Producto[] = [];
   private readonly productoService = inject(ProductoService);
   private readonly orderService = inject(OrderService);
 
-  isCheckingEmail = false;
-  isSubmitting = false;
-
-
+  availableProducts: Product[] = [];
+  
+  //Variables para calcular totales
   discountApplies : boolean = false;
+  orderTotal = 0;
+  selectedProducts : Product[] = [];
+
 
   orderForm : FormGroup = new FormGroup({
     customerName: new FormControl('', [Validators.required, Validators.minLength(3), Validators.maxLength(20)] ),
     email: new FormControl('', [Validators.required, Validators.email], [this.checkOrderLimit()] ),
     products: new FormArray([], [this.validarCantidadProductos(), this.validarProductoUnico(), this.validarCantidadProductosSegunStock()]), //donde por dentro cada uno va a ser un form group
-    total: new FormControl(''),
-    orderCode : new FormControl(''),
-    timestamp : new FormControl(new Date())
+  
   });
 
   constructor(){ }
 
-  /*
-  this.orderForm.get('emailCliente')?.statusChanges.subscribe(status => {
-    this.isCheckingEmail = status === 'PENDING';
-  }); */
+  ngOnInit(): void {
+    this.loadProducts();
+   }
 
-
-  get products(): FormArray {
+   
+  get productsFormArray(): FormArray {
     return this.orderForm.get('products') as FormArray;
   }
+ 
+ 
+ 
+   loadProducts():void {
+     this.productoService.getProducts().subscribe( {
+      next: (data) => {
+        this.availableProducts = data;
+      },
+      error: (err)=>{
+        console.log('Error obteniendo productos: ', err)
+      }
+     }
+     )
+   }
 
-  
-  agregarProducto(){
-    const producto = new FormGroup({
+
+
+  addProduct(){
+    const productForm = new FormGroup({
       productId: new FormControl('', Validators.required),
       quantity: new FormControl(0, [Validators.required, Validators.min(1)]),
       price : new FormControl(''),
@@ -60,19 +72,107 @@ export class CreateOrderComponent implements OnInit {
     });
 
 
-    this.products.push(producto);
+    this.productsFormArray.push(productForm);
     this.updateTotal()
-    /*
-    this.products.setValidators(this.validarProductoUnico());
-    this.products.setValidators(this.validarCantidadProductos());
-    this.products.setValidators(this.validarCantidadProductosSegunStock());
-    */
+
+  }
+
+  
+
+  removeProduct(index: number){
+    this.productsFormArray.removeAt(index);
+    this.productsFormArray.updateValueAndValidity();
+
+    }
+  
+
+
+  //Listeners de cambio de valor en inputs
+
+  onSelectedProductChange(index : number){
+    const productoSeleccionado = this.productsFormArray.at(index).get('productId')?.value;
+    const product = this.availableProducts.find(p => p.id === productoSeleccionado);
+
+    if(product){
+      this.productsFormArray.at(index).patchValue({
+        price: product.price,
+        stock: product.stock
+      })
+      this.updateSubtotalPrice(index);
+      
+    }
+    this.updateTotal();
+
+  }
+
+  onCantidadChange(index: number){
+
+    this.updateSubtotalPrice(index);
   }
 
 
+// Metodos actualizadores de valores
+
+  updateTotal(){
+    const total = this.calculateTotal();
+    this.discountApplies = total > 1000;
+    if(this.discountApplies){
+      this.orderForm.patchValue({total: total * 0.9})
+    } else {
+      this.orderForm.patchValue({total: total})
+    };
+
+}
+
+  private calculateTotal(){
+  let total = 0;
+  this.productsFormArray.controls.forEach(p=> {
+    const quantity = p.get('quantity')?.value;
+    const price = p.get('price')?.value;
+
+    total += quantity * price;
+  })
+  return total;
+  }
+
+
+
+
+  actualizarStockRestante(index : number){
+  const cantidad = this.productsFormArray.at(index).get('quantity')?.value;
+  const stockActual = this.productsFormArray.at(index).get('stock')?.value;
+  const stockRestante = stockActual - cantidad;
+  this.productsFormArray.at(index).get('stock')?.setValue(stockRestante);
+
+  }
+
+
+
+  updateSubtotalPrice(index: number){
+  const cantidad = this.productsFormArray.at(index).get('quantity')?.value;
+  const productoId = this.productsFormArray.at(index).get('productId')?.value;
+
+  const producto = this.availableProducts.find(p => p.id === productoId);
+  if(producto){
+  const precioUnitario = producto.price;
+  const precioSubtotal = cantidad * precioUnitario;
+  this.productsFormArray.at(index).get('price')?.setValue(precioSubtotal);
+  this.updateTotal();
+
+  }
+
+  }
+
+
+
+
+
+
+
+
+
+
   // Validaciones sincronicas
-
-
 
 
   validarProductoUnico(): ValidatorFn {
@@ -117,17 +217,7 @@ export class CreateOrderComponent implements OnInit {
     }
   }
 
-
-  getProductNameById(productId: string){
   
-    console.log(' this.productosDisponibles.find(p=> p.id == productId)?.name: ',  this.productosDisponibles.find(p=> p.id == productId)?.name )
-    return this.productosDisponibles.find(p=> p.id == productId)?.name;
-  }
-
-
-
-
-
 
 
 
@@ -165,106 +255,22 @@ export class CreateOrderComponent implements OnInit {
   }
 
 
-  ngOnInit(): void {
-   this.cargarProductos();
-  }
-
-
-
-  cargarProductos():void {
-    this.productoService.getProducts().subscribe((products)=>{
-      this.productosDisponibles = products;
-    })
-  }
-
-  onProductoSeleccionado(index : number){
-    const productoSeleccionado = this.products.at(index).get('productId')?.value;
-    const producto = this.productosDisponibles.find(p => p.id === productoSeleccionado);
-
-    if(producto){
-      this.products.at(index).patchValue({
-        price: producto.price,
-        stock: producto.stock
-      })
-      this.actualizarPrecioSubtotal(index);
-      
-    }
-    this.updateTotal();
-    /*
-    this.products.setValidators(this.validarCantidadProductos());
-    this.products.setValidators(this.validarProductoUnico());
-    this.products.setValidators(this.validarCantidadProductosSegunStock());
-    */
-  }
-
-
-
-
-  updateTotal(){
-        const total = this.calculateTotal();
-        this.discountApplies = total > 1000;
-        if(this.discountApplies){
-          this.orderForm.patchValue({total: total * 0.9})
-        } else {
-          this.orderForm.patchValue({total: total})
-        };
-    
-  }
-
-  private calculateTotal(){
-    let total = 0;
-    this.products.controls.forEach(p=> {
-      const quantity = p.get('quantity')?.value;
-      const price = p.get('price')?.value;
-
-      total += quantity * price;
-    })
-    return total;
-  }
-
-  onCantidadChange(index: number){
-
-    this.actualizarPrecioSubtotal(index);
-  }
-
-
-  actualizarStockRestante(index : number){
-    const cantidad = this.products.at(index).get('quantity')?.value;
-    const stockActual = this.products.at(index).get('stock')?.value;
-    const stockRestante = stockActual - cantidad;
-    this.products.at(index).get('stock')?.setValue(stockRestante);
-
-  }
 
 
   
-  actualizarPrecioSubtotal(index: number){
-    const cantidad = this.products.at(index).get('quantity')?.value;
-    const productoId = this.products.at(index).get('productId')?.value;
-
-    const producto = this.productosDisponibles.find(p => p.id === productoId);
-    if(producto){
-      const precioUnitario = producto.price;
-      const precioSubtotal = cantidad * precioUnitario;
-      this.products.at(index).get('price')?.setValue(precioSubtotal);
-      this.updateTotal();
-
-    }
-
- 
-
-
-
+  //Helper para visualizacion en HTML
+  getProductNameById(productId: string){
+  
+    console.log(' this.availableProducts.find(p=> p.id == productId)?.name: ',  this.availableProducts.find(p=> p.id == productId)?.name )
+    return this.availableProducts.find(p=> p.id == productId)?.name;
   }
 
 
 
 
-  eliminarProducto(index: number){
-    this.products.removeAt(index);
-    this.products.updateValueAndValidity();
-    
-  }
+
+
+
 
   sendForm(){
 
@@ -281,7 +287,7 @@ export class CreateOrderComponent implements OnInit {
 
       this.orderService.createOrder(order).pipe(
         finalize(()=>{
-          this.isSubmitting = false;
+        //  this.isSubmitting = false;
         })
       )
       .subscribe({
