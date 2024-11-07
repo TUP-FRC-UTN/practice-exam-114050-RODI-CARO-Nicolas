@@ -1,1 +1,37 @@
-<p>orders-list works!</p>
+<div class="container">
+    <h1> Orders </h1>
+    <div class="d-flex justify-content-end">
+        <button type="button" routerLink="/create-order" class="btn btn-primary"> Create New Order </button>
+    </div>
+    <br>
+    <div class="card">
+        <div class="card-body">
+            <input type="text" class="form-control" [formControl]="search">
+            <br>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Codigo de orden</th>
+                        <th scope="col">Cliente</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Productos</th>
+                        <th scope="col">Fecha de Compra</th>
+                        <th scope="col">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (order of filteredOrders; track $index) {
+                        <tr>
+                            <td> {{order.orderCode}} </td>
+                            <td> {{order.customerName}} </td>
+                            <td> {{order.email}} </td>
+                            <td> {{order.products?.length + " items"}} </td>
+                            <td> {{order.timestamp | date: 'dd/MM/yyyy'}} </td>
+                            <td> {{"$" + order.total}} </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
