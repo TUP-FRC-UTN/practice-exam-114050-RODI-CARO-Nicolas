@@ -76,20 +76,28 @@
                                 <div class="col-md-2">
                                     <label class="form-label">Cantidad</label>
                                     <input type="number" class="form-control" formControlName="quantity" (input)="onCantidadChange($index)">
-                                
-                                @if(productsFormArray.errors?.['productLimitsError']){
-                                    <div class="text-danger">
-                                        No se puede elegir mas de 10 unidades del mismo producto.
-                                    </div>
+
+                                @if(producto.get('quantity')?.errors?.['min']){
+                                    <div class="text-danger">El mínimo de productos a seleccionar es 1</div>
                                 }
-                                @if(productsFormArray.errors?.['stockExcedido']){
+
+                                @if(producto.get('quantity')?.errors?.['required']){
+                                    <div class="text-danger">Este campo no puede quedar vacío.</div>
+                                }
+
+                                @if(producto.get('quantity')?.errors?.['max']){
                                     <div class="text-danger">
                                         La cantidad no puede superar el stock disponible.
                                     </div>
                                 }
                                 </div>
-    
-                
+
+                                @if(productsFormArray.errors?.['productLimitError']){
+                                    <div class="text-danger">
+                                        No se puede elegir mas de 10 unidades del mismo producto.
+                                    </div>
+                                }
+
     
                                 <!--Campo stock readonly-->
     
@@ -133,7 +141,7 @@
                         <div class="col-md-6 offset-md-6">
                             <div class="d-flex jusitify-content-between">
                                 <strong>Total: </strong>
-                                <span>{{orderForm.value.total}}</span>
+                                <span>{{orderTotal}}</span>
                             </div>
                             @if(discountApplies){
                                 <div class="text-success mt-2">

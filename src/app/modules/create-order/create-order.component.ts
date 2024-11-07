@@ -32,7 +32,7 @@ export class CreateOrderComponent implements OnInit {
   orderForm : FormGroup = new FormGroup({
     customerName: new FormControl('', [Validators.required, Validators.minLength(3), Validators.maxLength(20)] ),
     email: new FormControl('', [Validators.required, Validators.email], [this.checkOrderLimit()] ),
-    products: new FormArray([], [this.validarCantidadProductos(), this.validarProductoUnico(), this.validarCantidadProductosSegunStock()]), //donde por dentro cada uno va a ser un form group
+    products: new FormArray([], [this.validarCantidadProductos(), this.validarProductoUnico()]), //donde por dentro cada uno va a ser un form group
   
   });
 
@@ -66,7 +66,7 @@ export class CreateOrderComponent implements OnInit {
   addProduct(){
     const productForm = new FormGroup({
       productId: new FormControl('', Validators.required),
-      quantity: new FormControl(0, [Validators.required, Validators.min(1)]),
+      quantity: new FormControl(1),
       price : new FormControl(''),
       stock: new FormControl('')
     });
@@ -90,14 +90,18 @@ export class CreateOrderComponent implements OnInit {
   //Listeners de cambio de valor en inputs
 
   onSelectedProductChange(index : number){
-    const productoSeleccionado = this.productsFormArray.at(index).get('productId')?.value;
-    const product = this.availableProducts.find(p => p.id === productoSeleccionado);
+    const productForm = this.productsFormArray.at(index);
+    const selectedProductId =productForm.get('productId')?.value;
+    const product = this.availableProducts.find(p => p.id === selectedProductId);
+    console.log('onSelectedProductChange-product: ', product)
 
     if(product){
       this.productsFormArray.at(index).patchValue({
         price: product.price,
         stock: product.stock
       })
+      const quantityControl = productForm.get('quantity');
+      quantityControl?.setValidators( [Validators.required, Validators.min(1), Validators.max(product.stock) ])
       this.updateSubtotalPrice(index);
       
     }
@@ -116,11 +120,7 @@ export class CreateOrderComponent implements OnInit {
   updateTotal(){
     const total = this.calculateTotal();
     this.discountApplies = total > 1000;
-    if(this.discountApplies){
-      this.orderForm.patchValue({total: total * 0.9})
-    } else {
-      this.orderForm.patchValue({total: total})
-    };
+    this.orderTotal = this.discountApplies ? total * 0.9 : total;
 
 }
 

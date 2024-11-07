@@ -281,6 +281,19 @@
       "total": 45269.41500000001,
       "orderCode": "ORD-1730955977101-865",
       "timestamp": "2024-11-07T05:04:22.278Z"
+    },
+    {
+      "id": "fc61",
+      "customerName": "Nicolas",
+      "email": "pabloamatisto@gmail.com",
+      "products": [
+        {
+          "productId": "1",
+          "quantity": 2,
+          "price": 1999.98,
+          "stock": 50
+        }
+      ]
     }
   ]
 }
