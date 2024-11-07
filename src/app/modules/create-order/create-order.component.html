@@ -120,7 +120,7 @@
                     <ul>
                         @for(product of orderForm.controls['products'].value; track $index){
                             <li>
-                               {{getProductNameById(product.id) + " - Cantidad: " + product.quantity + " - Precio: $" + product.price + " - Stock restante: " + product.stock }}
+                               {{getProductNameById(product.productId) + " - Cantidad: " + product.quantity + " - Precio: $" + product.price  }}
                             </li>
                         }
                     </ul>

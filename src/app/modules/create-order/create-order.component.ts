@@ -54,10 +54,12 @@ export class CreateOrderComponent implements OnInit {
   agregarProducto(){
     const producto = new FormGroup({
       productId: new FormControl('', Validators.required),
-      quantity: new FormControl(1, [Validators.required, Validators.min(1)]),
-      price : new FormControl({value: 0, disabled: true}),
-      stock: new FormControl({value : 0, disabled: true})
+      quantity: new FormControl(0, [Validators.required, Validators.min(1)]),
+      price : new FormControl(''),
+      stock: new FormControl('')
     });
+
+
     this.products.push(producto);
     this.updateTotal()
     /*
@@ -117,6 +119,8 @@ export class CreateOrderComponent implements OnInit {
 
 
   getProductNameById(productId: string){
+  
+    console.log(' this.productosDisponibles.find(p=> p.id == productId)?.name: ',  this.productosDisponibles.find(p=> p.id == productId)?.name )
     return this.productosDisponibles.find(p=> p.id == productId)?.name;
   }
 
@@ -182,6 +186,7 @@ export class CreateOrderComponent implements OnInit {
         price: producto.price,
         stock: producto.stock
       })
+      this.actualizarPrecioSubtotal(index);
       
     }
     this.updateTotal();
@@ -228,16 +233,27 @@ export class CreateOrderComponent implements OnInit {
     const stockActual = this.products.at(index).get('stock')?.value;
     const stockRestante = stockActual - cantidad;
     this.products.at(index).get('stock')?.setValue(stockRestante);
-    
+
   }
 
 
   
   actualizarPrecioSubtotal(index: number){
     const cantidad = this.products.at(index).get('quantity')?.value;
-    const precioUnitario = this.products.at(index).get('price')?.value;
-    const precioSubtotal = cantidad * precioUnitario;
-    this.products.at(index).get('price')?.setValue(precioSubtotal);
+    const productoId = this.products.at(index).get('productId')?.value;
+
+    const producto = this.productosDisponibles.find(p => p.id === productoId);
+    if(producto){
+      const precioUnitario = producto.price;
+      const precioSubtotal = cantidad * precioUnitario;
+      this.products.at(index).get('price')?.setValue(precioSubtotal);
+      this.updateTotal();
+
+    }
+
+ 
+
+
 
   }
 
