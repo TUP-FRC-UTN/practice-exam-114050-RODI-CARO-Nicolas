@@ -53,6 +53,7 @@
                                 <div class="col-md-3">
                                     <label class="form-label">Producto</label>
                                     <select class="form-select" formControlName="productId" (change)="onSelectedProductChange($index)">
+                                    <option value="">Seleccione un producto</option>
                                         @for(productoDisponible of availableProducts; track $index){
                                             <option [value]="productoDisponible.id">{{productoDisponible.name}} </option>
                                         }
@@ -126,9 +127,9 @@
                 </div>
                 <div class="card-body">
                     <ul>
-                        @for(product of orderForm.controls['products'].value; track $index){
+                        @for(product of selectedProducts; track $index){
                             <li>
-                               {{getProductNameById(product.productId) + " - Cantidad: " + product.quantity + " - Precio: $" + product.price  }}
+                               {{product.name }} - Cantidad: {{product.quantity}} - Precio: $ARS {{product.price}} - Stock {{product.stock}}"  
                             </li>
                         }
                     </ul>

@@ -42,6 +42,7 @@ export class CreateOrderComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadProducts();
+    this.updateSelectedProducts();
    }
 
    
@@ -84,7 +85,10 @@ export class CreateOrderComponent implements OnInit {
   removeProduct(index: number){
     this.productsFormArray.removeAt(index);
     this.updateTotal();
+    this.updateSelectedProducts();
+    
     this.productsFormArray.updateValueAndValidity();
+
 
     }
   
@@ -105,14 +109,18 @@ export class CreateOrderComponent implements OnInit {
       })
       const quantityControl = productForm.get('quantity');
       quantityControl?.setValidators( [Validators.required, Validators.min(1), Validators.max(product.stock) ])
-      this.updateSubtotalPrice(index);
+      this.updateSubtotalPrice(index); //Para la visualizacion del precio multiplicado por cantidad, no requerido en el enunciado
+      this.updateSelectedProducts() // Para la visualizacion del detalle en HTML
+
+
       
     }
   }
 
   onCantidadChange(index: number){
 
-    this.updateSubtotalPrice(index);
+    this.updateSelectedProducts();
+    this.updateSubtotalPrice(index); //Internamente llama a updateTotalPrice
   }
 
 
@@ -295,8 +303,8 @@ export class CreateOrderComponent implements OnInit {
         email: orderFormValue.email,
         products: orderFormValue.products,
         total: parseFloat(this.orderTotal.toFixed(2)),
-        orderCode: this.generateOrderCode(),
-        timestamp: new Date().toLocaleDateString(),
+        orderCode: this.generateOrderCode(orderFormValue.customerName, orderFormValue.email),
+        timestamp: new Date().toISOString(),
       }
       console.log("order object before createOrder: ", order)
       this.orderService.createOrder(order).pipe(
@@ -327,10 +335,12 @@ export class CreateOrderComponent implements OnInit {
   }
 
 
-  private generateOrderCode(): string {
-    const timestamp = Date.now();
-    const random = Math.floor(Math.random() * 1000 );
-    return `ORD-${timestamp}-${random}`;
+  private generateOrderCode(name: string, email: string): string {
+
+    const nameFirstLetter = name.charAt(0).toUpperCase();
+    const emailSufffix = email.slice(-4);
+    const timestamp = new Date().toJSON();
+    return `${nameFirstLetter}${emailSufffix}${timestamp}`
   }
 
   private markFormAsTouched(){
