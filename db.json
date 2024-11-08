@@ -407,6 +407,161 @@
       "total": 1619.96,
       "orderCode": "M.com2024-11-08T16:28:27.951Z",
       "timestamp": "2024-11-08T16:28:27.951Z"
+    },
+    {
+      "id": "fb2b",
+      "customerName": "Nic",
+      "email": "keithhernandez@gmail.com",
+      "products": [
+        {
+          "productId": "1",
+          "quantity": 3,
+          "price": 2999.9700000000003,
+          "stock": 50
+        }
+      ],
+      "total": 8099.92,
+      "orderCode": "N.com2024-11-08T18:12:40.350Z",
+      "timestamp": "2024-11-08T18:12:40.350Z"
+    },
+    {
+      "id": "482f",
+      "customerName": "Nic",
+      "email": "keithhernandez@gmail.com",
+      "products": [
+        {
+          "productId": "3",
+          "quantity": 4,
+          "price": 1799.96,
+          "stock": 75
+        }
+      ],
+      "total": 6479.86,
+      "orderCode": "N.com2024-11-08T18:12:59.159Z",
+      "timestamp": "2024-11-08T18:12:59.159Z"
+    },
+    {
+      "id": "e0b4",
+      "customerName": "Juan Rodriguez",
+      "email": "keithhernandez@gmail.com",
+      "products": [],
+      "total": 0,
+      "orderCode": "J.com2024-11-08T18:13:11.343Z",
+      "timestamp": "2024-11-08T18:13:11.343Z"
+    },
+    {
+      "id": "61a5",
+      "customerName": "Juan Rodriguez",
+      "email": "keithhernandez@gmail.com",
+      "products": [
+        {
+          "productId": "1",
+          "quantity": 3,
+          "price": 2999.9700000000003,
+          "stock": 50
+        }
+      ],
+      "total": 8099.92,
+      "orderCode": "J.com2024-11-08T18:13:18.687Z",
+      "timestamp": "2024-11-08T18:13:18.687Z"
+    },
+    {
+      "id": "5cba",
+      "customerName": "Juan",
+      "email": "jchotalar@gmail.com",
+      "products": [
+        {
+          "price": 0,
+          "productId": "",
+          "quantity": 1,
+          "stock": 0
+        }
+      ],
+      "total": 0,
+      "orderCode": "J.com2024-11-08T18:15:46.885Z",
+      "timestamp": "2024-11-08T18:15:46.885Z"
+    },
+    {
+      "id": "f79f",
+      "customerName": "Nicolas",
+      "email": "juan@yahoo.com",
+      "products": [
+        {
+          "price": 999.99,
+          "productId": "1",
+          "quantity": 10,
+          "stock": 50
+        },
+        {
+          "price": 699.99,
+          "productId": "2",
+          "quantity": 10,
+          "stock": 100
+        },
+        {
+          "price": 199.99,
+          "productId": "4",
+          "quantity": 4,
+          "stock": 120
+        }
+      ],
+      "total": 16019.78,
+      "orderCode": "N.com2024-11-08T18:20:40.165Z",
+      "timestamp": "2024-11-08T18:20:40.165Z"
+    },
+    {
+      "id": "126f",
+      "customerName": "Nic",
+      "email": "joseromelulaku@gmail.com",
+      "products": [
+        {
+          "productId": "3",
+          "quantity": 1,
+          "price": 449.99,
+          "stock": 75
+        },
+        {
+          "productId": "2",
+          "quantity": 1,
+          "price": 699.99,
+          "stock": 100
+        }
+      ],
+      "total": 1034.98,
+      "orderCode": "N.com2024-11-08T18:32:47.625Z",
+      "timestamp": "2024-11-08T18:32:47.625Z"
+    },
+    {
+      "id": "ffa5",
+      "customerName": "Nic",
+      "email": "joseromelulaku@gmail.com",
+      "products": [
+        {
+          "productId": "1",
+          "quantity": 1,
+          "price": 999.99,
+          "stock": 50
+        }
+      ],
+      "total": 999.99,
+      "orderCode": "N.com2024-11-08T18:33:11.887Z",
+      "timestamp": "2024-11-08T18:33:11.887Z"
+    },
+    {
+      "id": "1b63",
+      "customerName": "Nic",
+      "email": "joseromelulaku@gmail.com",
+      "products": [
+        {
+          "productId": "1",
+          "quantity": 6,
+          "price": 5999.9400000000005,
+          "stock": 50
+        }
+      ],
+      "total": 32399.68,
+      "orderCode": "N.com2024-11-08T18:33:31.144Z",
+      "timestamp": "2024-11-08T18:33:31.144Z"
     }
   ]
 }

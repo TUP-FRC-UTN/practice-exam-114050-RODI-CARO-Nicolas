@@ -93,11 +93,6 @@
                                 }
                                 </div>
 
-                                @if(productsFormArray.errors?.['productLimitError']){
-                                    <div class="text-danger">
-                                        No se puede elegir mas de 10 unidades del mismo producto.
-                                    </div>
-                                }
 
     
                                 <!--Campo stock readonly-->
@@ -114,6 +109,13 @@
                             </div>
 
                         }
+
+                        @if( orderForm.controls['products'].touched &&    productsFormArray.errors?.['productLimitError']){
+                            <div class="text-danger">
+                               Debe seleccionar entre 1 producto hasta 10 como máximo.
+                            </div>
+                        }
+
 
                     
                     </div>

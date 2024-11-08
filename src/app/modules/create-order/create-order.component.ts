@@ -34,7 +34,7 @@ export class CreateOrderComponent implements OnInit {
   orderForm : FormGroup = new FormGroup({
     customerName: new FormControl('', [Validators.required, Validators.minLength(3), Validators.maxLength(20)] ),
     email: new FormControl('', [Validators.required, Validators.email], [this.checkOrderLimit()] ),
-    products: new FormArray([], [this.validarCantidadProductos(), this.validarProductoUnico()]), //donde por dentro cada uno va a ser un form group
+    products: new FormArray([], [Validators.required, this.validarCantidadProductos(), this.validarProductoUnico()]), //donde por dentro cada uno va a ser un form group
   
   });
 
@@ -192,7 +192,7 @@ export class CreateOrderComponent implements OnInit {
   validarCantidadProductos() : ValidatorFn {
     return (control : AbstractControl) : ValidationErrors | null => {
       const array = control as FormArray;
-      return (array.length < 1 && array.length > 10) ? {'productLimitError': true} : null 
+      return (array.length < 1 || array.length > 10) ? {'productLimitError': true} : null 
     }
   }
 
@@ -322,6 +322,8 @@ export class CreateOrderComponent implements OnInit {
         }
         
       })
+    } else {
+      this.orderForm.markAllAsTouched();
     }
 
   }
