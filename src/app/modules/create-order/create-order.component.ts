@@ -26,6 +26,8 @@ export class CreateOrderComponent implements OnInit {
   //Variables para calcular totales
   discountApplies : boolean = false;
   orderTotal = 0;
+
+  //Arreglo para visualizacion en HTML
   selectedProducts : Product[] = [];
 
 
@@ -67,8 +69,8 @@ export class CreateOrderComponent implements OnInit {
     const productForm = new FormGroup({
       productId: new FormControl('', Validators.required),
       quantity: new FormControl(1),
-      price : new FormControl(''),
-      stock: new FormControl('')
+      price : new FormControl(0),
+      stock: new FormControl(0)
     });
 
 
@@ -81,6 +83,7 @@ export class CreateOrderComponent implements OnInit {
 
   removeProduct(index: number){
     this.productsFormArray.removeAt(index);
+    this.updateTotal();
     this.productsFormArray.updateValueAndValidity();
 
     }
@@ -105,8 +108,6 @@ export class CreateOrderComponent implements OnInit {
       this.updateSubtotalPrice(index);
       
     }
-    this.updateTotal();
-
   }
 
   onCantidadChange(index: number){
@@ -137,17 +138,6 @@ export class CreateOrderComponent implements OnInit {
 
 
 
-
-  actualizarStockRestante(index : number){
-  const cantidad = this.productsFormArray.at(index).get('quantity')?.value;
-  const stockActual = this.productsFormArray.at(index).get('stock')?.value;
-  const stockRestante = stockActual - cantidad;
-  this.productsFormArray.at(index).get('stock')?.setValue(stockRestante);
-
-  }
-
-
-
   updateSubtotalPrice(index: number){
   const cantidad = this.productsFormArray.at(index).get('quantity')?.value;
   const productoId = this.productsFormArray.at(index).get('productId')?.value;
@@ -162,7 +152,6 @@ export class CreateOrderComponent implements OnInit {
   }
 
   }
-
 
 
 
@@ -238,7 +227,7 @@ export class CreateOrderComponent implements OnInit {
           const last24Hours = new Date(now.getTime() - (24 * 60 * 60 * 1000));
           console.log('last 24 hours: ', last24Hours)
           const recentOrders = orders.filter(order => {
-            const orderDate = new Date(order.timestamp);
+            const orderDate = order.timestamp ? new Date(order.timestamp) : new Date();
             return orderDate >= last24Hours;
           });
           console.log('recent orders: ', recentOrders)
@@ -258,13 +247,29 @@ export class CreateOrderComponent implements OnInit {
 
 
   
-  //Helper para visualizacion en HTML
+  //Helpers para visualizacion en HTML
   getProductNameById(productId: string){
   
     console.log(' this.availableProducts.find(p=> p.id == productId)?.name: ',  this.availableProducts.find(p=> p.id == productId)?.name )
     return this.availableProducts.find(p=> p.id == productId)?.name;
   }
 
+  //Muta el arreglo de selectedProducts cada vez que se lo llama
+  updateSelectedProducts(){
+    const productsFormArrayControls = this.productsFormArray.controls;
+    this.selectedProducts = productsFormArrayControls.map( control => {
+      const productId = control.get('productId')?.value;
+      const product = this.availableProducts.find(p=> p.id.toString()=== productId);
+      return {
+        id: product?.id || '',
+        name: product?.name || '',
+        quantity: control.get('quantity')?.value,
+        price: control.get('price')?.value,
+        stock: product?.stock
+      };
+
+    }) as Product[]
+  }
 
 
 
@@ -274,17 +279,26 @@ export class CreateOrderComponent implements OnInit {
 
   sendForm(){
 
-    this.orderForm.patchValue(
-      {
-        orderCode: this.generateOrderCode()
-      }
-    )
+
     console.log('sendForm - this.orderForm: ', this.orderForm);
 
     if(this.orderForm.valid){
-      const order = this.orderForm.value as Order;
-      console.log('se castea el form a objeto Order: ', order);
+      const orderFormValue = this.orderForm.value
+      console.log('order form value: ', orderFormValue);
 
+      //como no tiene exactamente la misma estructura que el objeto Order, no se podría castear con el 
+      //this.orderForm.value as Order;
+
+      
+      const order: Order ={
+        customerName: orderFormValue.customerName,
+        email: orderFormValue.email,
+        products: orderFormValue.products,
+        total: parseFloat(this.orderTotal.toFixed(2)),
+        orderCode: this.generateOrderCode(),
+        timestamp: new Date().toLocaleDateString(),
+      }
+      console.log("order object before createOrder: ", order)
       this.orderService.createOrder(order).pipe(
         finalize(()=>{
         //  this.isSubmitting = false;
